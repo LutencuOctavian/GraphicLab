@@ -5,13 +5,18 @@ namespace gps {
     //Camera constructor
     Camera::Camera(glm::vec3 cameraPosition, glm::vec3 cameraTarget, glm::vec3 cameraUp) {
         //TODO
+        this->cameraPosition = cameraPosition;
+        this->cameraTarget = cameraTarget;
+        this->cameraUpDirection = cameraUp;
+        //this->cameraFrontDirection = glm::vec3();
+        //this->cameraRightDirection = glm::vec3();
     }
 
     //return the view matrix, using the glm::lookAt() function
     glm::mat4 Camera::getViewMatrix() {
         //TODO
-
-        return glm::mat4();
+        
+        return glm::lookAt(this->cameraFrontDirection, this->cameraTarget, this->cameraUpDirection);
     }
 
     //update the camera internal parameters following a camera move event

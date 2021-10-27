@@ -16,6 +16,7 @@
 
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include <math.h>
 
 int glWindowWidth = 800;
 int glWindowHeight = 600;
@@ -66,11 +67,16 @@ GLuint verticesEBO;
 GLuint objectVAO;
 
 gps::Shader myCustomShader;
-
+glm::mat4 view;
 glm::mat4 model;
 GLint modelLoc;
+gps::Camera camera;
 float angle = 0;
 float angleT = 0;
+float yPozition = 0;
+float xPozition = 0;
+float zPozition = 5;
+float ungh = 0;
 
 void windowResizeCallback(GLFWwindow* window, int width, int height)
 {
@@ -158,7 +164,7 @@ void renderScene()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 
-	model = glm::mat4(1.0f);
+	
 	if (glfwGetKey(glWindow, GLFW_KEY_R)) {
 		angle += 0.0002f;
 	}
@@ -167,7 +173,29 @@ void renderScene()
 		angleT += 0.0002f;
 	}
 
+	if (glfwGetKey(glWindow, GLFW_KEY_W)) {
+		yPozition += 0.0002f;
+	}
+
+	if (glfwGetKey(glWindow, GLFW_KEY_S)) {
+		ungh+= 0.00002f;
+		//xPozition+= 0.0002f;
+	}
+
+	if (glfwGetKey(glWindow, GLFW_KEY_Z)) {
+		yPozition += 0.0002f;
+		xPozition += 0.0002f;
+		zPozition += 0.0002f;
+	}
+
+	////////////////////////////////////////////////////
+	view = glm::lookAt(glm::vec3(cos(ungh * 3.141 / 180) * xPozition, sin(ungh * 3.141 / 180)*yPozition, zPozition), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	// send matrix data to shader
+	GLint viewLoc = glGetUniformLocation(myCustomShader.shaderProgram, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+	/////////////////////////////////////////////////////////
 	// create rotation matrix
+	model = glm::mat4(1.0f);
 	model = glm::rotate(model, angle, glm::vec3(0, 1, 0));
 	// send matrix data to vertex shader
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -179,7 +207,6 @@ void renderScene()
 
 	//second cub
 	// create rotation matrixssrger
-	
 	// send matrix data to vertex shader
 	//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 	model = glm::mat4(1.0f);
@@ -188,6 +215,19 @@ void renderScene()
 	model = glm::rotate(model, angleT, glm::vec3(0, 1, 0));
 	model =	glm::translate(model, glm::vec3(-2, 0, 0));
 	model = glm::translate(model, glm::vec3(2, 0, 0));
+	// send matrix data to vertex shader
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	// draw the second cube
+	myCustomShader.useShaderProgram();
+	glBindVertexArray(objectVAO);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+	model = glm::mat4(1.0f);
+	// create a translation matrix
+	//model = glm::translate(model, glm::vec3(2, 0, 0));
+	//model = glm::rotate(model, angleT, glm::vec3(0, 1, 0));
+	//model = glm::translate(model, glm::vec3(-2, 0, 0));
+	model = glm::translate(model, glm::vec3(-2, 0, 0));
 	// send matrix data to vertex shader
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 	// draw the second cube
@@ -220,11 +260,11 @@ int main(int argc, const char * argv[]) {
 	modelLoc = glGetUniformLocation(myCustomShader.shaderProgram, "model");
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-	glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f,
-		0.0f));
+	camera = gps::Camera(glm::vec3(0.0f, 1.0f, 5.0f), glm::vec3(0.0f, 0.0f, -10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
 	// send matrix data to shader
 	GLint viewLoc = glGetUniformLocation(myCustomShader.shaderProgram, "view");
-	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(camera.getViewMatrix()));
 
 	// initialize the projection matrix
 	glm::mat4 projection = glm::perspective(70.0f, (float)glWindowWidth / (float)glWindowHeight, 0.1f, 1000.0f);
