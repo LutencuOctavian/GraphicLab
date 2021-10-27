@@ -178,7 +178,7 @@ void renderScene()
 
 
 	//second cub
-	// create rotation matrix
+	// create rotation matrixssrger
 	
 	// send matrix data to vertex shader
 	//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
